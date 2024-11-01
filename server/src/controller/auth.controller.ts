@@ -1,10 +1,7 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import { generateToken, verifyToken, refreshToken } from '../utils/jwt.utils';
-import prisma from '../db/postgre';
-import { promises } from 'dns';
-
-const JWT_SECRET = 'your_jwt_secret'; 
+import prisma from '../db/postgre'; 
 
 
 export const signup = async (req: Request, res: Response): Promise<any> => {
@@ -24,7 +21,7 @@ export const signup = async (req: Request, res: Response): Promise<any> => {
       email,
     },
   });
-
+  generateToken(user.id, user.username,res);
   res.status(201).json({ message: 'User created successfully', user });
 };
 
@@ -48,7 +45,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       res.status(401).json({ message: 'Invalid credentials' });
       return;
     }
-    const token = generateToken(user.id, user.username);
+    const token = generateToken(user.id, user.username,res);
     res.cookie('token', token, { httpOnly: true }).status(200).json({ message: 'Login successful' });
   } catch (error) {
     res.status(500).json({ message: 'Internal Server Error', error: (error as Error).message }).clearCookie('token');

@@ -9,9 +9,44 @@ datasource db {
 }
 
 model User {
-  id       String     @id @default(uuid()) @unique
-  username String 
-  password String
-  email    String @unique
+  id         String     @id @default(uuid())
+  username   String
+  password   String
+  email      String     @unique
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  status     String     @default("active")
+  
+  // Relationships
+  chats      Chat[]     @relation("UserChats")
+  messages   Message[]  @relation("UserMessages") // The opposite relation field in `Message` will be `sender`
 }
 
+model Chat {
+  chat_id     String     @id @default(uuid())
+  type        String
+  createdAt   DateTime   @default(now())
+  createdBy   String     // Stores the ID of the user who created the chat
+  participants User[]    @relation("UserChats") // Many-to-Many relationship with User
+  
+  // Relationships
+  messages    Message[]  @relation("ChatMessages")
+}
+
+model Message {
+  message_id  String     @id @default(uuid())
+  
+  // Foreign key to Chat
+  chat        Chat       @relation("ChatMessages", fields: [chat_id], references: [chat_id])
+  chat_id     String
+  
+  // Foreign key to User as sender
+  sender      User       @relation("UserMessages", fields: [sender_id], references: [id])
+  sender_id   String
+  
+  content     String?    // Nullable for media-only messages
+  media_url   String?    // Nullable for text-only messages
+  media_type  String?    // Nullable for specifying media type (e.g., "image", "video")
+  createdAt   DateTime   @default(now())
+  
+}
