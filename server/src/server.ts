@@ -1,7 +1,8 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { connectToDatabase } from './db/postgre';
 import cookieParser from 'cookie-parser';
 import authroutes from './routes/auth.routes';
+import messageroutes from './routes/mess.routes';
 import cors from 'cors';
 import setupSocket from './utils/socket';
 import http from 'http';
@@ -18,11 +19,8 @@ app.use(cookieParser());
 app.use(express.json());
 
 const port = 3000;
-
-// Basic route
-
-// Authentication routes
 app.use('/auth', authroutes);
+app.use('/mess',messageroutes)
 
 // Create an HTTP server and setup Socket.IO
 const server = http.createServer(app);

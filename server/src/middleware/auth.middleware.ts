@@ -1,23 +1,40 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyToken } from '../utils/jwt.utils'; // Import the verifyToken function
-
-interface AuthRequest extends Request {
-  user?: { id: number; username: string }; // Define a user property
+import prisma from '../db/postgre'; 
+import { JwtPayload } from 'jsonwebtoken';
+declare global {
+	namespace Express {
+		export interface Request {
+			user: {
+				id: string;
+			};
+		}
+	}
+}
+interface cstmverify extends JwtPayload {
+  id: string;
+  username: string;
 }
 
-const authMiddleware = (req: AuthRequest, res: Response, next: NextFunction) => {
-  const token = req.headers['authorization']?.split(' ')[1]; 
-
+const authMiddleware =  async (req: Request, res: Response, next: NextFunction):Promise<any> => {
+  const token = req.cookies.jwt;
   if (!token) {
     return res.status(403).json({ message: 'Token is required' });
   }
 
-  const verifiedToken = verifyToken(token);
+  const verifiedToken = verifyToken(token) as cstmverify;
   if (!verifiedToken) {
     return res.status(403).json({ message: 'Invalid token' });
   }
 
-  req.user = { id: verifiedToken.id, username: verifiedToken.username };
+  const users= await prisma.user.findUnique({
+    where: { id: verifiedToken.id},
+  });
+  console.log(users);
+  if (!users) {
+    return res.status(403).json({ message: 'User not found' });
+  }
+  req.user = users
   next(); // Proceed to the next middleware or route handler
 };
 

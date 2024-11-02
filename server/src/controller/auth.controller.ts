@@ -21,15 +21,15 @@ export const signup = async (req: Request, res: Response): Promise<any> => {
       email,
     },
   });
-  generateToken(user.id, user.username,res);
-  res.status(201).json({ message: 'User created successfully', user });
+  const token=generateToken(user.id, user.username);
+  console.log(token)
+  res.cookie("jwt", token, {maxAge: 3600000, httpOnly: true }).status(200).json({ message: 'Login successful' });
 };
 
 
 // Login controller
 export const login = async (req: Request, res: Response): Promise<void> => {
   const { email, password,username } = req.body;
-
   try {
     const user = await prisma.user.findUnique({
       where: { email },
@@ -45,9 +45,17 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       res.status(401).json({ message: 'Invalid credentials' });
       return;
     }
-    const token = generateToken(user.id, user.username,res);
-    res.cookie('token', token, { httpOnly: true }).status(200).json({ message: 'Login successful' });
+    const token = generateToken(user.id, user.username);
+    res.cookie('jwt', token, { httpOnly: true }).status(200).json({ message: 'Login successful' });
   } catch (error) {
+    res.status(500).json({ message: 'Internal Server Error', error: (error as Error).message }).clearCookie('token');
+  }
+};
+
+export const logout = async (req: Request, res: Response): Promise<void> => {
+  try{
+    res.cookie('jwt', '', { httpOnly: true,maxAge: 0 }).status(200).json({ message: 'Logout successful' });
+  }catch(error){
     res.status(500).json({ message: 'Internal Server Error', error: (error as Error).message }).clearCookie('token');
   }
 };
