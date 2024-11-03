@@ -23,7 +23,7 @@ export const signup = async (req: Request, res: Response): Promise<any> => {
   });
   const token=generateToken(user.id, user.username);
   console.log(token)
-  res.cookie("jwt", token, {maxAge: 3600000, httpOnly: true }).status(200).json({ message: 'Login successful' });
+  res.cookie("jwt", token, {maxAge: 3600000, httpOnly: true }).status(201).json({ message: 'Login successful' });
 };
 
 
@@ -52,7 +52,9 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+
 export const logout = async (req: Request, res: Response): Promise<void> => {
+  console.log("logouts");
   try{
     res.cookie('jwt', '', { httpOnly: true,maxAge: 0 }).status(200).json({ message: 'Logout successful' });
   }catch(error){

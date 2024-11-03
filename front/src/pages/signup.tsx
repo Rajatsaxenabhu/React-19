@@ -1,9 +1,8 @@
 // components/Signup.tsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
 import { api } from "../api/axios";
-import { useDispatch } from 'react-redux'
+import { useDispatch} from 'react-redux'
 import {login,logout} from '../redux/auth_verify/authy_slice'
 
 
@@ -16,12 +15,12 @@ const Signup: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Signup:", { username, email, password });
     try{
         const resp=await api.post('/auth/signup', { username, email, password });
+        console.log(resp)
         if(resp.status===201){
           alert("User created successfully");
-          dispatch(login())        
+          dispatch(login(username));        
           navigate('/home');
         }
         else if(resp.status===400){
